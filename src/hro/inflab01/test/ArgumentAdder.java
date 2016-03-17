@@ -9,7 +9,7 @@ public class ArgumentAdder {
 		try {
 			int x = Integer.parseInt(args[0]);
 			int y = Integer.parseInt(args[1]);
-			boolean exit = Boolean.parseBoolean(args[3]);
+			boolean exit = Boolean.parseBoolean(args[2]);
 			System.out.println(x + y);
 			if(exit) {
 				System.exit(x + y);
