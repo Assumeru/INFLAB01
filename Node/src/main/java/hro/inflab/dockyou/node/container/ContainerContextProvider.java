@@ -1,16 +1,16 @@
-package hro.inflab.dockyou.node;
+package hro.inflab.dockyou.node.container;
 
 /**
  * Context creator.
  * 
  * Implementations must specify a default contructor.
  */
-public interface ContextProvider {
+public interface ContainerContextProvider {
 	/**
 	 * Creates a new context from arguments passed to the main method.
 	 * 
 	 * @param args Main arguments [2, ]
 	 * @return A new context
 	 */
-	Context createContext(String[] args);
+	ContainerContext createContext(String[] args);
 }

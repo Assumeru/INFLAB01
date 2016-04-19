@@ -1,4 +1,11 @@
 {
 	"id": 123,
-	"amq":
+	"amqp": {
+		"host": "",
+		"virtualhost": "",
+		"port": 0,
+		"username": "",
+		"password": "",
+		"queue": ""
+	}
 }

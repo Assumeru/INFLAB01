@@ -4,15 +4,18 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+import hro.inflab.dockyou.node.container.ContainerContext;
+import hro.inflab.dockyou.node.container.ContainerContextProvider;
+
 public class Main {
 	public static void main(String[] args) {
 		if(args.length < 2) {
-			exit("usage: <manager url> <context provider class>");
+			exit("usage: <manager url> <container context provider class>");
 			return;
 		}
 		try {
 			URL managerUrl = createUrlOrDie(args[0]);
-			Context context = createContextOrDie(args);
+			ContainerContext context = createContextOrDie(args);
 			if(context == null) {
 				exit("Failed to start.");
 				return;
@@ -38,7 +41,7 @@ public class Main {
 		return null;
 	}
 
-	private static Context createContextOrDie(String[] args) {
+	private static ContainerContext createContextOrDie(String[] args) {
 		try {
 			return createContext(args);
 		} catch (ClassNotFoundException e) {
@@ -51,12 +54,12 @@ public class Main {
 		return null;
 	}
 
-	private static Context createContext(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+	private static ContainerContext createContext(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		Class<?> type = Class.forName(args[1]);
-		if(!ContextProvider.class.isAssignableFrom(type)) {
-			throw new IllegalArgumentException(type + " does not implement ContextProvider.");
+		if(!ContainerContextProvider.class.isAssignableFrom(type)) {
+			throw new IllegalArgumentException(type + " does not implement " + ContainerContextProvider.class);
 		}
-		ContextProvider provider = (ContextProvider) type.newInstance();
+		ContainerContextProvider provider = (ContainerContextProvider) type.newInstance();
 		return provider.createContext(Arrays.copyOfRange(args, 2, args.length));
 	}
 }

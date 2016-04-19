@@ -4,6 +4,18 @@
 	<groupId>hro.inflab.dockyou</groupId>
 	<artifactId>node</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<dependencies>
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>3.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160212</version>
+		</dependency>
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>
