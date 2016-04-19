@@ -1,4 +1,4 @@
-package hro.inflab01.test;
+package hro.inflab.dockyou.test;
 
 public class RandomCrash implements Runnable {
 	private final int mult;

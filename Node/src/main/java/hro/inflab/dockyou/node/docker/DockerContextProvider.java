@@ -1,7 +1,7 @@
-package hro.inflab01.node.docker;
+package hro.inflab.dockyou.node.docker;
 
-import hro.inflab01.node.Context;
-import hro.inflab01.node.ContextProvider;
+import hro.inflab.dockyou.node.Context;
+import hro.inflab.dockyou.node.ContextProvider;
 
 public class DockerContextProvider implements ContextProvider {
 	@Override

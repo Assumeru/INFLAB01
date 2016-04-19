@@ -1,4 +1,4 @@
-package hro.inflab01.node;
+package hro.inflab.dockyou.node;
 
 import java.net.MalformedURLException;
 import java.net.URL;

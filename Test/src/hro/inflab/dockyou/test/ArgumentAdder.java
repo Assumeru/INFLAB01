@@ -1,4 +1,4 @@
-package hro.inflab01.test;
+package hro.inflab.dockyou.test;
 
 public class ArgumentAdder {
 	public static void main(String[] args) {

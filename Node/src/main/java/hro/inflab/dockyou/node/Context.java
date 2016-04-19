@@ -1,4 +1,4 @@
-package hro.inflab01.node;
+package hro.inflab.dockyou.node;
 
 /**
  * Interface that provides an abstract way of handling implementation-specific requests.

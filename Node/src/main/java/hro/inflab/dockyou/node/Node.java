@@ -1,4 +1,4 @@
-package hro.inflab01.node;
+package hro.inflab.dockyou.node;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,9 +27,16 @@ public class Node implements Runnable {
 	private void registerWithManager() {
 		try {
 			URLConnection conn = managerUrl.openConnection();
+			byte[] buffer = new byte[1024];
 			try(InputStream input = conn.getInputStream()) {
 				conn.connect();
-				//TODO something
+				StringBuilder sb = new StringBuilder();
+				int read;
+				while((read = input.read(buffer)) > 0) {
+					sb.append(new String(buffer, "UTF-8"));
+				}
+				System.out.println("output");
+				System.out.println(sb.toString());
 			}
 		} catch (IOException e) {
 			running = false;
