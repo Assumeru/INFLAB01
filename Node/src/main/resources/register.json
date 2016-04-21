@@ -1,5 +1,8 @@
-{
-	"id": 123,
+[{
+	"action": "set-id",
+	"id": 123
+}, {
+	"action": "connect",
 	"amqp": {
 		"host": "",
 		"virtualhost": "",
@@ -8,4 +11,4 @@
 		"password": "",
 		"queue": ""
 	}
-}
+}]
