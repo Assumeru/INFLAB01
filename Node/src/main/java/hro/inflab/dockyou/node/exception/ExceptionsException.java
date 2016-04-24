@@ -1,4 +1,4 @@
-package hro.inflab.dockyou.node;
+package hro.inflab.dockyou.node.exception;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -75,8 +75,15 @@ public class ExceptionsException extends RuntimeException implements Collection<
 	}
 
 	@Override
-	public String toString() {
-		//TODO
-		return super.toString();
+	public String getMessage() {
+		StringBuilder sb = new StringBuilder();
+		String message = super.getMessage();
+		if(message == null) {
+			message = "";
+		}
+		for(Exception e : exceptions) {
+			sb.append("\n\t").append(e.toString());
+		}
+		return sb.toString();
 	}
 }

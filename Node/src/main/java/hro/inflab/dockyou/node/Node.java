@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.json.JSONArray;
@@ -11,43 +14,32 @@ import org.json.JSONException;
 
 import hro.inflab.dockyou.node.action.ActionHandler;
 import hro.inflab.dockyou.node.container.ContainerContext;
+import hro.inflab.dockyou.node.hb.HeartBeatListener;
 
 public class Node implements Runnable {
 	private final URL managerUrl;
 	private final ContainerContext context;
 	private final ActionHandler actionHandler;
-	private boolean running;
+	private final Map<String, Object> settings;
 
 	public Node(URL managerUrl, ContainerContext context) {
 		this.managerUrl = managerUrl;
 		this.context = context;
 		actionHandler = new ActionHandler();
+		settings = Collections.synchronizedMap(new HashMap<>());
 	}
 
 	@Override
 	public void run() {
-		running = true;
 		try {
-			init();
+			initManager();
+			initHeartBeat();
 		} catch (Exception e) {
-			e.printStackTrace();
-			running = false;
-		}
-		while(running) {
-			// TODO
+			throw new RuntimeException("Failed to initialise", e);
 		}
 	}
 
-	private void init() throws JSONException, IOException, TimeoutException {
-		JSONArray actions = registerWithManager();
-		handleActions(actions);
-	}
-
-	public void handleActions(JSONArray requests) {
-		actionHandler.handle(requests, this);
-	}
-
-	private JSONArray registerWithManager() throws IOException {
+	private void initManager() throws JSONException, IOException, TimeoutException {
 		URLConnection conn = managerUrl.openConnection();
 		byte[] buffer = new byte[1024];
 		try(InputStream input = conn.getInputStream()) {
@@ -57,7 +49,23 @@ public class Node implements Runnable {
 			while((read = input.read(buffer)) > 0) {
 				sb.append(new String(buffer, 0, read, "UTF-8"));
 			}
-			return new JSONArray(sb.toString());
+			handleActions(new JSONArray(sb.toString()));
 		}
+	}
+
+	public void handleActions(JSONArray requests) {
+		actionHandler.handle(requests, this);
+	}
+
+	public ContainerContext getContext() {
+		return context;
+	}
+
+	private void initHeartBeat() throws IOException {
+		new HeartBeatListener(this, 0xD0CC).start();
+	}
+
+	public Map<String, Object> getSettings() {
+		return settings;
 	}
 }

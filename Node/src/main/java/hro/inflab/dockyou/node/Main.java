@@ -2,33 +2,38 @@ package hro.inflab.dockyou.node;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Arrays;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import hro.inflab.dockyou.node.container.ContainerContext;
-import hro.inflab.dockyou.node.container.ContainerContextProvider;
+import hro.inflab.dockyou.node.container.docker.DockerContext;
 
 public class Main {
+	private static final Logger LOG = LogManager.getLogger();
+	private static final Class<? extends ContainerContext> DEFAULT_CONTAINER_CONTEXT = DockerContext.class;
+
 	public static void main(String[] args) {
-		if(args.length < 2) {
-			exit("usage: <manager url> <container context provider class>");
+		if(args.length == 0) {
+			exit("usage: <manager url>");
 			return;
 		}
 		try {
 			URL managerUrl = createUrlOrDie(args[0]);
-			ContainerContext context = createContextOrDie(args);
+			ContainerContext context = createContextOrDie();
 			if(context == null) {
 				exit("Failed to start.");
 				return;
 			}
 			new Node(managerUrl, context).run();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG.error(e.getMessage(), e);
 			System.exit(2);
 		}
 	}
 
 	private static void exit(String message) {
-		System.err.println(message);
+		LOG.error(message);
 		System.exit(1);
 	}
 
@@ -41,9 +46,9 @@ public class Main {
 		return null;
 	}
 
-	private static ContainerContext createContextOrDie(String[] args) {
+	private static ContainerContext createContextOrDie() {
 		try {
-			return createContext(args);
+			return createContext();
 		} catch (ClassNotFoundException e) {
 			exit("Failed to load the provided class.");
 		} catch (InstantiationException | IllegalAccessException | ClassCastException e) {
@@ -54,12 +59,19 @@ public class Main {
 		return null;
 	}
 
-	private static ContainerContext createContext(String[] args) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-		Class<?> type = Class.forName(args[1]);
-		if(!ContainerContextProvider.class.isAssignableFrom(type)) {
-			throw new IllegalArgumentException(type + " does not implement " + ContainerContextProvider.class);
+	private static ContainerContext createContext() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+		String arg = ContainerContext.class.getName();
+		String className = System.getProperty(arg);
+		Class<?> type;
+		if(className == null) {
+			LOG.warn("Using default ContainerContext, use jvm argument -D" + arg + "=<class> to defined another implementation.");
+			type = DEFAULT_CONTAINER_CONTEXT;
+		} else {
+			type = Class.forName(className);
+			if(!ContainerContext.class.isAssignableFrom(type)) {
+				throw new IllegalArgumentException(type + " does not implement " + ContainerContext.class);
+			}
 		}
-		ContainerContextProvider provider = (ContainerContextProvider) type.newInstance();
-		return provider.createContext(Arrays.copyOfRange(args, 2, args.length));
+		return (ContainerContext) type.newInstance();
 	}
 }

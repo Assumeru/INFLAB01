@@ -12,8 +12,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.reflections.Reflections;
 
-import hro.inflab.dockyou.node.ExceptionsException;
 import hro.inflab.dockyou.node.Node;
+import hro.inflab.dockyou.node.exception.ExceptionsException;
 
 public class ActionHandler {
 	private static final Logger LOG = LogManager.getLogger();
@@ -41,7 +41,7 @@ public class ActionHandler {
 		}
 	}
 
-	public void handle(JSONObject request, Node node) {
+	public void handle(JSONObject request, Node node) throws Exception {
 		Action action;
 		try {
 			String actionName = request.getString("action");
