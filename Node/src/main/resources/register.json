@@ -4,11 +4,11 @@
 }, {
 	"action": "connect",
 	"amqp": {
-		"host": "",
-		"virtualhost": "",
-		"port": 0,
-		"username": "",
-		"password": "",
-		"queue": ""
+		"host": "localhost",
+		"virtualhost": "/",
+		"port": 5672,
+		"username": "guest",
+		"password": "guest",
+		"queue": "shiny_queue"
 	}
 }]

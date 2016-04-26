@@ -1,5 +1,7 @@
 package hro.inflab.dockyou.node.exception;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -76,14 +78,15 @@ public class ExceptionsException extends RuntimeException implements Collection<
 
 	@Override
 	public String getMessage() {
-		StringBuilder sb = new StringBuilder();
+		StringWriter writer = new StringWriter();
 		String message = super.getMessage();
 		if(message == null) {
 			message = "";
 		}
 		for(Exception e : exceptions) {
-			sb.append("\n\t").append(e.toString());
+			writer.append("\n\t").append(e.toString());
+			e.printStackTrace(new PrintWriter(writer));
 		}
-		return sb.toString();
+		return writer.toString();
 	}
 }
