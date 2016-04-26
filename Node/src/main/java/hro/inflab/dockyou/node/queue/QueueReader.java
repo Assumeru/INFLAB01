@@ -22,7 +22,7 @@ public class QueueReader extends DefaultConsumer {
 
 	@Override
 	public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) {
-		LOG.trace("Received message from queue. " + consumerTag + " " + body.length);
+		LOG.trace("Received message from queue. " + consumerTag + " of length " + body.length);
 		try {
 			JSONArray requests = new JSONArray(new String(body, "UTF-8"));
 			node.handleActions(requests);
