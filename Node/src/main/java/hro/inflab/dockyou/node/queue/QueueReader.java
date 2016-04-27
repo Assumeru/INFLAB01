@@ -8,6 +8,7 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.ShutdownSignalException;
 
 import hro.inflab.dockyou.node.Node;
 
@@ -30,5 +31,11 @@ public class QueueReader extends DefaultConsumer {
 		} catch(Exception e) {
 			LOG.error("Failed to handle message", e);
 		}
+	}
+
+	@Override
+	public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
+		LOG.warn("Queue connection losts, shutting down...", sig);
+		node.shutdown();
 	}
 }

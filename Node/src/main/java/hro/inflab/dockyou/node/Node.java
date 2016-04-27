@@ -21,6 +21,7 @@ public class Node implements Runnable {
 	private final ContainerContext context;
 	private final ActionHandler actionHandler;
 	private final Map<String, Object> settings;
+	private HeartBeatListener heartBeat;
 
 	public Node(URL managerUrl, ContainerContext context) {
 		this.managerUrl = managerUrl;
@@ -62,10 +63,15 @@ public class Node implements Runnable {
 	}
 
 	private void initHeartBeat() throws IOException {
-		new HeartBeatListener(this, 0xD0CC).start();
+		heartBeat = new HeartBeatListener(this, 0xD0CC);
+		heartBeat.start();
 	}
 
 	public Map<String, Object> getSettings() {
 		return settings;
+	}
+
+	public void shutdown() {
+		heartBeat.stop();
 	}
 }
