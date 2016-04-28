@@ -9,4 +9,6 @@ import org.json.JSONObject;
  */
 public interface ContainerContext {
 	void handle(JSONObject request) throws Exception;
+
+	void stopAll();
 }

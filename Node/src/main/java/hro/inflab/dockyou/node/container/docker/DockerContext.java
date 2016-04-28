@@ -18,7 +18,10 @@ public class DockerContext implements ContainerContext {
 	@Override
 	public void handle(JSONObject request) throws Exception {
 		JSONObject args = request.getJSONObject("docker");
-		String command = parseCommand(args);
+		runCommand(parseCommand(args));
+	}
+
+	private void runCommand(String command) throws IOException {
 		LOG.info(command);
 		new ProcessListener(command, new ExitListener() {
 			@Override
@@ -51,5 +54,14 @@ public class DockerContext implements ContainerContext {
 		}
 		//TODO
 		return "docker stats";
+	}
+
+	@Override
+	public void stopAll() {
+		try {
+			runCommand("docker stop $(docker ps -a -q)");
+		} catch(Exception e) {
+			LOG.error("Failed to stop all containers", e);
+		}
 	}
 }

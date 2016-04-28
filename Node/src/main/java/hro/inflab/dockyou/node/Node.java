@@ -84,6 +84,7 @@ public class Node implements Runnable {
 		} catch(IOException e) {
 			LOG.error("Error closing connection", e);
 		}
+		context.stopAll();
 	}
 
 	public void setQueue(Connection queueConn) {
