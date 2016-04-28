@@ -18,14 +18,14 @@ public class DockerContext implements ContainerContext {
 	@Override
 	public void handle(JSONObject request) throws Exception {
 		JSONObject args = request.getJSONObject("docker");
-		new ProcessListener(parseCommand(args), new ExitListener() {
+		String command = parseCommand(args);
+		LOG.info(command);
+		new ProcessListener(command, new ExitListener() {
 			@Override
 			public void onExit(Process process, int exitCode) {
-				if(exitCode != 0) {
-					LOG.warn("Process terminated with non-zero exit code " + exitCode);
-					LOG.warn(copyToString(process.getInputStream()));
-					LOG.warn(copyToString(process.getErrorStream()));
-				}
+				LOG.info("Process terminated with exit code " + exitCode);
+				LOG.info(copyToString(process.getInputStream()));
+				LOG.info(copyToString(process.getErrorStream()));
 			}
 		});
 	}

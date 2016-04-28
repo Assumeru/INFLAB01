@@ -9,19 +9,25 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import com.rabbitmq.client.Connection;
 
 import hro.inflab.dockyou.node.action.ActionHandler;
 import hro.inflab.dockyou.node.container.ContainerContext;
 import hro.inflab.dockyou.node.hb.HeartBeatListener;
 
 public class Node implements Runnable {
+	private static final Logger LOG = LogManager.getLogger();
 	private final URL managerUrl;
 	private final ContainerContext context;
 	private final ActionHandler actionHandler;
 	private final Map<String, Object> settings;
 	private HeartBeatListener heartBeat;
+	private Connection queueConn;
 
 	public Node(URL managerUrl, ContainerContext context) {
 		this.managerUrl = managerUrl;
@@ -73,5 +79,14 @@ public class Node implements Runnable {
 
 	public void shutdown() {
 		heartBeat.stop();
+		try {
+			queueConn.close();
+		} catch(IOException e) {
+			LOG.error("Error closing connection", e);
+		}
+	}
+
+	public void setQueue(Connection queueConn) {
+		this.queueConn = queueConn;
 	}
 }

@@ -22,6 +22,7 @@ public class ConnectToQueue implements Action {
 		factory.setUsername(config.getString("username"));
 		factory.setPassword(config.getString("password"));
 		Connection conn = factory.newConnection();
+		node.setQueue(conn);
 		Channel channel = conn.createChannel();
 		channel.basicConsume(config.getString("queue"), new QueueReader(channel, node));
 	}
