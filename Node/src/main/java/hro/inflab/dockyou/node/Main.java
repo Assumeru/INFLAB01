@@ -63,7 +63,7 @@ public class Main {
 		String arg = ContainerContext.class.getName();
 		String className = System.getProperty(arg);
 		Class<?> type;
-		if(className == null) {
+		if(className == null || className.isEmpty()) {
 			LOG.warn("Using default ContainerContext, use jvm argument -D" + arg + "=<class> to defined another implementation.");
 			type = DEFAULT_CONTAINER_CONTEXT;
 		} else {

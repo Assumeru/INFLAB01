@@ -52,8 +52,43 @@ public class DockerContext implements ContainerContext {
 		if(request.has("test")) {
 			return request.getString("test");
 		}
+		if(request.has("pull")) {
+			return "docker pull " + request.get("pull");
+		} else if(request.has("run")) {
+			return parseRun(request.getJSONObject("run"));
+		}
 		//TODO
 		return "docker stats";
+	}
+
+	/**
+	 * <pre>
+	 * {
+	 * 	"action": "container",
+	 * 	"docker": {
+	 * 		"run": {
+	 * 			"name": [name],
+	 * 			"environment": {
+	 * 				[key]: [value]
+	 * 			},
+	 * 			"image": [image]
+	 * 		}
+	 * 	}
+	 * }
+	 */
+	private String parseRun(JSONObject args) {
+		StringBuilder cmd = new StringBuilder("docker run");
+		if(args.has("name")) {
+			cmd.append(" --name ").append(args.get("name"));
+		}
+		if(args.has("environment")) {
+			JSONObject envVars = args.getJSONObject("environment");
+			for(String key : envVars.keySet()) {
+				cmd.append(" -e \"").append(key).append('=').append(envVars.get(key)).append('"');
+			}
+		}
+		cmd.append(' ').append(args.get("image"));
+		return cmd.toString();
 	}
 
 	@Override
