@@ -9,6 +9,9 @@ import org.apache.logging.log4j.Logger;
 import hro.inflab.dockyou.node.container.ContainerContext;
 import hro.inflab.dockyou.node.container.docker.DockerContext;
 
+/**
+ * ./docker run -v /var/run/docker.sock:/var/run/docker.sock --privileged -e "MANAGER_URL=[URL]" [IMAGE]
+ */
 public class Main {
 	private static final Logger LOG = LogManager.getLogger();
 	private static final Class<? extends ContainerContext> DEFAULT_CONTAINER_CONTEXT = DockerContext.class;

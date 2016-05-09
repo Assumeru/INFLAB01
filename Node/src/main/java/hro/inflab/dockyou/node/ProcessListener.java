@@ -30,12 +30,14 @@ public class ProcessListener {
 				exitListener.onExit(process, process.exitValue());
 			} catch(InterruptedException e) {
 				LOG.error("Listener interrupted", e);
+			} catch(Exception e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
 
 	@FunctionalInterface
 	public static interface ExitListener {
-		void onExit(Process process, int exitCode);
+		void onExit(Process process, int exitCode) throws Exception;
 	}
 }

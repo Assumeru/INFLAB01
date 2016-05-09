@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import com.rabbitmq.client.AlreadyClosedException;
 import com.rabbitmq.client.Connection;
 
 import hro.inflab.dockyou.node.action.ActionHandler;
@@ -28,6 +29,7 @@ public class Node implements Runnable {
 	private final Map<String, Object> settings;
 	private HeartBeatListener heartBeat;
 	private Connection queueConn;
+	private boolean shutdown;
 
 	public Node(URL managerUrl, ContainerContext context) {
 		this.managerUrl = managerUrl;
@@ -81,6 +83,8 @@ public class Node implements Runnable {
 		heartBeat.stop();
 		try {
 			queueConn.close();
+		} catch(AlreadyClosedException e) {
+			//Do nothing
 		} catch(IOException e) {
 			LOG.error("Error closing connection", e);
 		}
@@ -89,5 +93,13 @@ public class Node implements Runnable {
 
 	public void setQueue(Connection queueConn) {
 		this.queueConn = queueConn;
+	}
+
+	public void setShutdown(boolean shutdown) {
+		this.shutdown = shutdown;
+	}
+
+	public boolean shouldShutdown() {
+		return shutdown;
 	}
 }

@@ -31,11 +31,14 @@ public class QueueReader extends DefaultConsumer {
 		} catch(Exception e) {
 			LOG.error("Failed to handle message", e);
 		}
+		if(node.shouldShutdown()) {
+			node.shutdown();
+		}
 	}
 
 	@Override
 	public void handleShutdownSignal(String consumerTag, ShutdownSignalException sig) {
-		LOG.warn("Queue connection losts, shutting down...", sig);
+		LOG.warn("Queue connection lost, shutting down...", sig);
 		node.shutdown();
 	}
 }

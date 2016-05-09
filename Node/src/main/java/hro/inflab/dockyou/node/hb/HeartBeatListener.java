@@ -31,7 +31,9 @@ public class HeartBeatListener implements Runnable {
 				listen();
 			}
 		} catch (IOException e) {
-			LOG.error("Error listening for connections", e);
+			if(running) {
+				LOG.error("Error listening for connections", e);
+			}
 		} finally {
 			tryClose();
 		}
