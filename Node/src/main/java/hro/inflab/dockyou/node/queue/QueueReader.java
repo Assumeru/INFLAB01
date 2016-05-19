@@ -12,6 +12,11 @@ import com.rabbitmq.client.ShutdownSignalException;
 
 import hro.inflab.dockyou.node.Node;
 
+/**
+ * Consumes queue messages and lets the {@link Node} handle them.
+ *
+ * Calls {@link Node#shutdown()} when the connection is broken.
+ */
 public class QueueReader extends DefaultConsumer {
 	private static final Logger LOG = LogManager.getLogger();
 	private final Node node;

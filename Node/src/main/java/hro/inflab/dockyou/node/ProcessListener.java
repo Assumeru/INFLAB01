@@ -22,6 +22,9 @@ public class ProcessListener {
 		this(Runtime.getRuntime().exec(command), listener);
 	}
 
+	/**
+	 * Waits for a process to stop, then calls onExit.
+	 */
 	private class Listener implements Runnable {
 		@Override
 		public void run() {
@@ -38,6 +41,12 @@ public class ProcessListener {
 
 	@FunctionalInterface
 	public static interface ExitListener {
+		/**
+		 * Called when a process exits.
+		 * 
+		 * @param process The process that exited
+		 * @param exitCode The process' exit code
+		 */
 		void onExit(Process process, int exitCode) throws Exception;
 	}
 }

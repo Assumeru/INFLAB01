@@ -25,6 +25,9 @@ public class ActionHandler {
 		}
 	}
 
+	/**
+	 * Builds a map of classes implementing {@link Action}.
+	 */
 	private static void init() {
 		Set<Class<? extends Action>> actions = new Reflections(Action.class.getPackage().getName())
 				.getSubTypesOf(Action.class);
@@ -41,6 +44,13 @@ public class ActionHandler {
 		}
 	}
 
+	/**
+	 * Finds an {@link Action} matching the request and executes it.
+	 * 
+	 * @param request The request to handle
+	 * @param node The node to handle the request on
+	 * @throws Exception
+	 */
 	public void handle(JSONObject request, Node node) throws Exception {
 		Action action;
 		try {
@@ -55,6 +65,12 @@ public class ActionHandler {
 		action.handle(request, node);
 	}
 
+	/**
+	 * Handles an array of requests.
+	 * 
+	 * @param requests The requests to handle
+	 * @param node The node to use
+	 */
 	public void handle(JSONArray requests, Node node) {
 		ExceptionsException exception = new ExceptionsException();
 		for(Object request : requests) {

@@ -9,6 +9,9 @@ import org.apache.logging.log4j.Logger;
 
 import hro.inflab.dockyou.node.Node;
 
+/**
+ * Listens on a {@link Socket} and returns the {@link Node}'s id.
+ */
 public class HeartBeatListener implements Runnable {
 	private static final Logger LOG = LogManager.getLogger();
 	private Node node;

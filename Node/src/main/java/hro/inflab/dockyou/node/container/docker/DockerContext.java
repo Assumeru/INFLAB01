@@ -29,15 +29,34 @@ public class DockerContext implements ContainerContext {
 		runCommand(parseCommand(args));
 	}
 
+	/**
+	 * Runs a command using the default {@link ExitListener}.
+	 * 
+	 * @param command The command to run
+	 * @throws IOException
+	 */
 	private void runCommand(String command) throws IOException {
 		runCommand(command, DEFAULT_EXIT_LISTENER);
 	}
 
+	/**
+	 * Runs a command with the given {@link ExitListener}.
+	 * 
+	 * @param command The command to run
+	 * @param exitListener The {@link ExitListener} to use
+	 * @throws IOException
+	 */
 	private void runCommand(String command, ExitListener exitListener) throws IOException {
 		LOG.info(command);
 		new ProcessListener(command, exitListener);
 	}
 
+	/**
+	 * Copies an {@link InputStream} to a {@link String}
+	 * 
+	 * @param in The {@link InputStream} to read from
+	 * @return The created {@link String}
+	 */
 	private static String copyToString(InputStream in) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		byte[] buffer = new byte[1024];
@@ -52,6 +71,12 @@ public class DockerContext implements ContainerContext {
 		return out.toString();
 	}
 
+	/**
+	 * Creates a command from an input object.
+	 * 
+	 * @param request The input to parse
+	 * @return A command to run
+	 */
 	private String parseCommand(JSONObject request) {
 		//TODO delete
 		if(request.has("test")) {
@@ -67,6 +92,8 @@ public class DockerContext implements ContainerContext {
 	}
 
 	/**
+	 * Parses a <pre>docker run</pre> command.
+	 * Example:
 	 * <pre>
 	 * {
 	 * 	"action": "container",
@@ -81,6 +108,9 @@ public class DockerContext implements ContainerContext {
 	 * 		}
 	 * 	}
 	 * }
+	 * </pre>
+	 * @param args The input to parse
+	 * @return The parsed command
 	 */
 	private String parseRun(JSONObject args) {
 		StringBuilder cmd = new StringBuilder("docker run");

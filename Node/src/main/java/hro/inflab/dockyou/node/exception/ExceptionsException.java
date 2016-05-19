@@ -7,6 +7,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * A throwable collection of exceptions.
+ */
 public class ExceptionsException extends RuntimeException implements Collection<Exception> {
 	private static final long serialVersionUID = 8088593023831411631L;
 	private List<Exception> exceptions = new ArrayList<>();

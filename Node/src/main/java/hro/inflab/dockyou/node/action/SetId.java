@@ -4,6 +4,9 @@ import org.json.JSONObject;
 
 import hro.inflab.dockyou.node.Node;
 
+/**
+ * Sets the {@link Node}'s id.
+ */
 public class SetId implements Action {
 	@Override
 	public void handle(JSONObject request, Node node) {

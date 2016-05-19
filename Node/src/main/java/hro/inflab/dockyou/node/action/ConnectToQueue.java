@@ -9,8 +9,10 @@ import com.rabbitmq.client.ConnectionFactory;
 import hro.inflab.dockyou.node.Node;
 import hro.inflab.dockyou.node.queue.QueueReader;
 
+/**
+ * Creates a connection to the queue and saves it in the {@link Node}.
+ */
 public class ConnectToQueue implements Action {
-
 	@Override
 	public void handle(JSONObject request, Node node) throws Exception {
 		JSONObject config = request.getJSONObject("amqp");
@@ -31,5 +33,4 @@ public class ConnectToQueue implements Action {
 	public String getAction() {
 		return "connect";
 	}
-
 }

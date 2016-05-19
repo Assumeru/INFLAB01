@@ -8,7 +8,16 @@ import org.json.JSONObject;
  * Implementations must declare a default constructor.
  */
 public interface ContainerContext {
+	/**
+	 * Handles a request.
+	 * 
+	 * @param request The request to handle
+	 * @throws Exception If an error occurs
+	 */
 	void handle(JSONObject request) throws Exception;
 
+	/**
+	 * Stops all containers.
+	 */
 	void stopAll();
 }
