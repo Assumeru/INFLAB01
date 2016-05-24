@@ -3,6 +3,7 @@ package hro.inflab.dockyou.node.container.docker;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Base64;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -86,9 +87,60 @@ public class DockerContext implements ContainerContext {
 			return "docker pull " + request.get("pull");
 		} else if(request.has("run")) {
 			return parseRun(request.getJSONObject("run"));
+		} else if(request.has("stop")) {
+			return parseStop(request.getJSONObject("stop"));
+		} else if(request.has("import")) {
+			return parseImport(request.getString("import"));
 		}
 		//TODO
 		return "docker stats";
+	}
+
+	/**
+	 * Parses a <pre>docker import</pre> command.
+	 * Example:
+	 * <pre>
+	 * {
+	 * 	"action": "container",
+	 * 	"docker": {
+	 * 		"import": [base64 container]
+	 * 	}
+	 * }
+	 * </pre>
+	 * @param string The exported container
+	 * @return The parsed command
+	 */
+	private String parseImport(String container) {
+		StringBuilder cmd = new StringBuilder("echo \"")
+				.append(container)
+				.append("\" | docker import -");
+		return cmd.toString();
+	}
+
+	/**
+	 * Parses a <pre>docker stop</pre> command.
+	 * Example:
+	 * <pre>
+	 * {
+	 * 	"action": "container",
+	 * 	"docker": {
+	 * 		"stop": {
+	 * 			"container": [id],
+	 * 			"time": [seconds till SIGKILL]
+	 * 		}
+	 * 	}
+	 * }
+	 * </pre>
+	 * @param args The input to parse
+	 * @return The parsed command
+	 */
+	private String parseStop(JSONObject args) {
+		StringBuilder cmd = new StringBuilder("docker stop");
+		if(args.has("time")) {
+			cmd.append(" -t ").append(args.get("time"));
+		}
+		cmd.append(' ').append(args.getString("container"));
+		return cmd.toString();
 	}
 
 	/**
@@ -143,5 +195,30 @@ public class DockerContext implements ContainerContext {
 		} catch(Exception e) {
 			LOG.error("Failed to stop all containers", e);
 		}
+	}
+
+	private Process run(String cmd) throws IOException, InterruptedException {
+		Process process = Runtime.getRuntime().exec(cmd);
+		process.waitFor();
+		return process;
+	}
+
+	@Override
+	public JSONObject export(String container) throws Exception {
+		run("docker stop " + container);
+		Process process = run("docker export " + container);
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		try(InputStream in = process.getInputStream()) {
+			byte[] buffer = new byte[4096];
+			int read;
+			while((read = in.read(buffer)) > 0) {
+				out.write(buffer, 0, read);
+			}
+		}
+		String export = Base64.getEncoder().encodeToString(out.toByteArray());
+		return new JSONObject()
+				.put("action", "container")
+				.put("docker", new JSONObject()
+						.put("import", export));
 	}
 }

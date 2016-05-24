@@ -20,4 +20,13 @@ public interface ContainerContext {
 	 * Stops all containers.
 	 */
 	void stopAll();
+
+	/**
+	 * Stops and returns a container
+	 * 
+	 * @param container
+	 * @return An import action
+	 * @throws Exception 
+	 */
+	JSONObject export(String container) throws Exception;
 }
