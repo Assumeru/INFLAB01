@@ -7,6 +7,7 @@ import java.util.Base64;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import hro.inflab.dockyou.node.ProcessListener;
@@ -37,7 +38,9 @@ public class DockerContext implements ContainerContext {
 	 * @throws IOException
 	 */
 	private void runCommand(String command) throws IOException {
-		runCommand(command, DEFAULT_EXIT_LISTENER);
+		if(command != null) {
+			runCommand(command, DEFAULT_EXIT_LISTENER);
+		}
 	}
 
 	/**
@@ -77,8 +80,10 @@ public class DockerContext implements ContainerContext {
 	 * 
 	 * @param request The input to parse
 	 * @return A command to run
+	 * @throws IOException 
+	 * @throws JSONException 
 	 */
-	private String parseCommand(JSONObject request) {
+	private String parseCommand(JSONObject request) throws JSONException, IOException {
 		//TODO delete
 		if(request.has("test")) {
 			return request.getString("test");
@@ -109,12 +114,15 @@ public class DockerContext implements ContainerContext {
 	 * </pre>
 	 * @param string The exported container
 	 * @return The parsed command
+	 * @throws IOException 
 	 */
-	private String parseImport(String container) {
-		StringBuilder cmd = new StringBuilder("echo \"")
-				.append(container)
-				.append("\" | docker import -");
-		return cmd.toString();
+	private String parseImport(String container) throws IOException {
+		byte[] input = Base64.getDecoder().decode(container);
+		Process process = Runtime.getRuntime().exec("docker import -");
+		process.getOutputStream().write(input);
+		process.getOutputStream().flush();
+		new ProcessListener(process, DEFAULT_EXIT_LISTENER);
+		return null;
 	}
 
 	/**
