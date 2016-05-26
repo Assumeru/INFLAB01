@@ -1,5 +1,6 @@
 package hro.inflab.dockyou.node.hb;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
@@ -69,10 +70,12 @@ public class HeartBeatListener implements Runnable {
 	}
 
 	private void sendHttp(Socket socket, String message) throws UnsupportedEncodingException, IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		byte[] messageBytes = message.getBytes("UTF-8");
 		message = "HTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: " + messageBytes.length + "\n\n";
-		socket.getOutputStream().write(message.getBytes("UTF-8"));
-		socket.getOutputStream().write(messageBytes);
+		out.write(message.getBytes("UTF-8"));
+		out.write(messageBytes);
+		socket.getOutputStream().write(out.toByteArray());
 		socket.getOutputStream().flush();
 	}
 
