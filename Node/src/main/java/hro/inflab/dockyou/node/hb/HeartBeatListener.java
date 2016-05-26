@@ -48,7 +48,8 @@ public class HeartBeatListener implements Runnable {
 		new Thread(() -> {
 			try {
 				sendHeartBeat(socket);
-				Thread.sleep(100);
+				byte[] buffer = new byte[1024];
+				while(socket.getInputStream().read(buffer) > 0);
 			} catch(Exception e) {
 				LOG.error("Error sending heart beat", e);
 			} finally {
