@@ -59,6 +59,7 @@ public class HeartBeatListener implements Runnable {
 				.put("id", node.getSettings().get("id"))
 				.put("containers", node.getContext().getContainers());
 		socket.getOutputStream().write(output.toString().getBytes("UTF-8"));
+		socket.getOutputStream().flush();
 	}
 
 	private void tryClose() {
