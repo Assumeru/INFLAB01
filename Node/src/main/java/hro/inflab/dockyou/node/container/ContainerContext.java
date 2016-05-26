@@ -1,5 +1,6 @@
 package hro.inflab.dockyou.node.container;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -29,4 +30,6 @@ public interface ContainerContext {
 	 * @throws Exception 
 	 */
 	JSONObject export(String container) throws Exception;
+
+	JSONArray getContainers();
 }

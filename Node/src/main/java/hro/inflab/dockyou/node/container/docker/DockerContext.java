@@ -7,6 +7,7 @@ import java.util.Base64;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -228,5 +229,29 @@ public class DockerContext implements ContainerContext {
 				.put("action", "container")
 				.put("docker", new JSONObject()
 						.put("import", export));
+	}
+
+	@Override
+	public JSONArray getContainers() {
+		JSONArray containers = new JSONArray();
+		try {
+			Process process = run("docker ps");
+			String[] lines = copyToString(process.getInputStream()).split("\n");
+			String[] headers = lines[0].split("\\s{2,}");
+			for(int i = 0; i < headers.length; i++) {
+				headers[i] = headers[i].trim();
+			}
+			for(int i = 1; i < lines.length; i++) {
+				String[] values = lines[i].split("\\s{2,}");
+				JSONObject container = new JSONObject();
+				for(int v = 0; v < values.length; v++) {
+					container.put(headers[v], values[v]);
+				}
+				containers.put(container);
+			}
+		} catch(Exception e) {
+			LOG.error("Failed to get containers", e);
+		}
+		return containers;
 	}
 }

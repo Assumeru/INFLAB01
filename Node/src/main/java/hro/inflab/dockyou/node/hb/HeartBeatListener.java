@@ -6,6 +6,7 @@ import java.net.Socket;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import hro.inflab.dockyou.node.Node;
 
@@ -54,7 +55,10 @@ public class HeartBeatListener implements Runnable {
 	}
 
 	private void sendHeartBeat(Socket socket) throws IOException {
-		socket.getOutputStream().write(String.valueOf(node.getSettings().get("id")).getBytes("UTF-8"));
+		JSONObject output = new JSONObject()
+				.put("id", node.getSettings().get("id"))
+				.put("containers", node.getContext().getContainers());
+		socket.getOutputStream().write(output.toString().getBytes("UTF-8"));
 	}
 
 	private void tryClose() {
