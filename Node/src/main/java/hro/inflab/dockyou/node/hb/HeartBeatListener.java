@@ -69,8 +69,10 @@ public class HeartBeatListener implements Runnable {
 	}
 
 	private void sendHttp(Socket socket, String message) throws UnsupportedEncodingException, IOException {
-		message = "HTTP/1.1 200 OK\nContent-Type: application/json\n\n" + message;
+		byte[] messageBytes = message.getBytes("UTF-8");
+		message = "HTTP/1.1 200 OK\nContent-Type: application/json\nContent-Length: " + messageBytes.length + "\n\n";
 		socket.getOutputStream().write(message.getBytes("UTF-8"));
+		socket.getOutputStream().write(messageBytes);
 		socket.getOutputStream().flush();
 	}
 
