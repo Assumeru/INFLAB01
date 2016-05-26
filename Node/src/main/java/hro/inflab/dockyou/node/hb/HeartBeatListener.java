@@ -44,14 +44,21 @@ public class HeartBeatListener implements Runnable {
 	}
 
 	private void listen() throws IOException {
-		Socket socket = serverSocket.accept();
-		try {
-			sendHeartBeat(socket);
-		} catch(IOException e) {
-			LOG.error("Error sending heart beat", e);
-		} finally {
-			socket.close();
-		}
+		final Socket socket = serverSocket.accept();
+		new Thread(() -> {
+			try {
+				sendHeartBeat(socket);
+				Thread.sleep(100);
+			} catch(Exception e) {
+				LOG.error("Error sending heart beat", e);
+			} finally {
+				try {
+					socket.close();
+				} catch(Exception e) {
+					LOG.error("Error closing socket", e);
+				}
+			}
+		}).start();
 	}
 
 	private void sendHeartBeat(Socket socket) throws IOException {
