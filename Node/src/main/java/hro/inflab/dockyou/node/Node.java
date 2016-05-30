@@ -19,6 +19,7 @@ import com.rabbitmq.client.Connection;
 
 import hro.inflab.dockyou.node.action.ActionHandler;
 import hro.inflab.dockyou.node.container.ContainerContext;
+import hro.inflab.dockyou.node.exception.InitialisationException;
 import hro.inflab.dockyou.node.hb.HeartBeatListener;
 
 public class Node implements Runnable {
@@ -44,7 +45,7 @@ public class Node implements Runnable {
 			initManager();
 			initHeartBeat();
 		} catch (Exception e) {
-			throw new RuntimeException("Failed to initialise", e);
+			throw new InitialisationException("Failed to initialise", e);
 		}
 	}
 

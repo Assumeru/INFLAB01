@@ -3,6 +3,8 @@ package hro.inflab.dockyou.node.container;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import hro.inflab.dockyou.node.exception.ContainerException;
+
 /**
  * Interface that provides an abstract way of handling implementation-specific requests.
  * 
@@ -13,9 +15,9 @@ public interface ContainerContext {
 	 * Handles a request.
 	 * 
 	 * @param request The request to handle
-	 * @throws Exception If an error occurs
+	 * @throws ContainerException If an error occurs
 	 */
-	void handle(JSONObject request) throws Exception;
+	void handle(JSONObject request) throws ContainerException;
 
 	/**
 	 * Stops all containers.
@@ -27,9 +29,9 @@ public interface ContainerContext {
 	 * 
 	 * @param container
 	 * @return An import action
-	 * @throws Exception 
+	 * @throws ContainerException 
 	 */
-	JSONObject export(String container) throws Exception;
+	JSONObject export(String container) throws ContainerException;
 
 	JSONArray getContainers();
 }

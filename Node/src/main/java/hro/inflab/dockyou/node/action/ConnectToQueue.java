@@ -10,6 +10,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 
 import hro.inflab.dockyou.node.Node;
+import hro.inflab.dockyou.node.exception.ActionException;
 import hro.inflab.dockyou.node.queue.QueueReader;
 
 /**
@@ -17,12 +18,16 @@ import hro.inflab.dockyou.node.queue.QueueReader;
  */
 public class ConnectToQueue implements Action {
 	@Override
-	public void handle(JSONObject request, Node node) throws Exception {
+	public void handle(JSONObject request, Node node) throws ActionException {
 		JSONObject config = request.getJSONObject("amqp");
-		Connection conn = createConnection(config);
-		node.setQueue(conn);
-		Channel channel = conn.createChannel();
-		channel.basicConsume(config.getString("queue"), new QueueReader(channel, node));
+		try {
+			Connection conn = createConnection(config);
+			node.setQueue(conn);
+			Channel channel = conn.createChannel();
+			channel.basicConsume(config.getString("queue"), new QueueReader(channel, node));
+		} catch(IOException | TimeoutException e) {
+			throw new ActionException("Failed to connect to queue", e);
+		}
 	}
 
 	@Override

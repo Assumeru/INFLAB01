@@ -4,19 +4,26 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import hro.inflab.dockyou.node.ProcessListener;
 import hro.inflab.dockyou.node.ProcessListener.ExitListener;
 import hro.inflab.dockyou.node.container.ContainerContext;
+import hro.inflab.dockyou.node.exception.ContainerException;
+import hro.inflab.dockyou.node.exception.ProcessException;
 
 public class DockerContext implements ContainerContext {
 	private static final Logger LOG = LogManager.getLogger();
+	private static final String IMPORT_COMMAND = "import";
+	private static final Map<String, Function<JSONObject, String>> COMMANDS = new HashMap<>();
 	private static final ExitListener DEFAULT_EXIT_LISTENER = new ExitListener() {
 		@Override
 		public void onExit(Process process, int exitCode) {
@@ -25,11 +32,20 @@ public class DockerContext implements ContainerContext {
 			LOG.info(copyToString(process.getErrorStream()));
 		}
 	};
+	static {
+		COMMANDS.put("pull", request -> "docker pull " + request.get("pull"));
+		COMMANDS.put("run", request -> parseRun(request.getJSONObject("run")));
+		COMMANDS.put("stop", request -> parseStop(request.getJSONObject("stop")));
+	}
 
 	@Override
-	public void handle(JSONObject request) throws Exception {
+	public void handle(JSONObject request) throws ContainerException {
 		JSONObject args = request.getJSONObject("docker");
-		runCommand(parseCommand(args));
+		try {
+			runCommand(parseCommand(args));
+		} catch (IOException e) {
+			throw new ContainerException("Failed to run command", e);
+		}
 	}
 
 	/**
@@ -38,7 +54,7 @@ public class DockerContext implements ContainerContext {
 	 * @param command The command to run
 	 * @throws IOException
 	 */
-	private void runCommand(String command) throws IOException {
+	private static void runCommand(String command) throws IOException {
 		if(command != null) {
 			runCommand(command, DEFAULT_EXIT_LISTENER);
 		}
@@ -51,9 +67,9 @@ public class DockerContext implements ContainerContext {
 	 * @param exitListener The {@link ExitListener} to use
 	 * @throws IOException
 	 */
-	private void runCommand(String command, ExitListener exitListener) throws IOException {
+	private static void runCommand(String command, ExitListener exitListener) throws IOException {
 		LOG.info(command);
-		new ProcessListener(command, exitListener);
+		new ProcessListener(command, exitListener).listen();
 	}
 
 	/**
@@ -81,25 +97,23 @@ public class DockerContext implements ContainerContext {
 	 * 
 	 * @param request The input to parse
 	 * @return A command to run
-	 * @throws IOException 
-	 * @throws JSONException 
+	 * @throws ContainerException 
 	 */
-	private String parseCommand(JSONObject request) throws JSONException, IOException {
+	private String parseCommand(JSONObject request) throws ContainerException {
 		//TODO delete
 		if(request.has("test")) {
 			return request.getString("test");
 		}
-		if(request.has("pull")) {
-			return "docker pull " + request.get("pull");
-		} else if(request.has("run")) {
-			return parseRun(request.getJSONObject("run"));
-		} else if(request.has("stop")) {
-			return parseStop(request.getJSONObject("stop"));
-		} else if(request.has("import")) {
-			return parseImport(request.getString("import"));
+		for(Entry<String, Function<JSONObject, String>> entry : COMMANDS.entrySet()) {
+			if(request.has(entry.getKey())) {
+				return entry.getValue().apply(request);
+			}
 		}
-		//TODO
-		return "docker stats";
+		if(request.has(IMPORT_COMMAND)) {
+			parseImport(request.getString(IMPORT_COMMAND));
+			return null;
+		}
+		throw new UnsupportedOperationException("Unknown command");
 	}
 
 	/**
@@ -114,16 +128,18 @@ public class DockerContext implements ContainerContext {
 	 * }
 	 * </pre>
 	 * @param string The exported container
-	 * @return The parsed command
-	 * @throws IOException 
+	 * @throws ContainerException 
 	 */
-	private String parseImport(String container) throws IOException {
+	private static void parseImport(String container) throws ContainerException {
 		byte[] input = Base64.getDecoder().decode(container);
-		Process process = Runtime.getRuntime().exec("docker import -");
-		process.getOutputStream().write(input);
-		process.getOutputStream().flush();
-		new ProcessListener(process, DEFAULT_EXIT_LISTENER);
-		return null;
+		try {
+			Process process = Runtime.getRuntime().exec("docker import -");
+			process.getOutputStream().write(input);
+			process.getOutputStream().flush();
+			new ProcessListener(process, DEFAULT_EXIT_LISTENER).listen();;
+		} catch(IOException e) {
+			throw new ContainerException("Failed to import", e);
+		}
 	}
 
 	/**
@@ -143,7 +159,7 @@ public class DockerContext implements ContainerContext {
 	 * @param args The input to parse
 	 * @return The parsed command
 	 */
-	private String parseStop(JSONObject args) {
+	private static String parseStop(JSONObject args) {
 		StringBuilder cmd = new StringBuilder("docker stop");
 		if(args.has("time")) {
 			cmd.append(" -t ").append(args.get("time"));
@@ -173,7 +189,7 @@ public class DockerContext implements ContainerContext {
 	 * @param args The input to parse
 	 * @return The parsed command
 	 */
-	private String parseRun(JSONObject args) {
+	private static String parseRun(JSONObject args) {
 		StringBuilder cmd = new StringBuilder("docker run");
 		if(args.has("name")) {
 			cmd.append(" --name ").append(args.get("name"));
@@ -198,11 +214,19 @@ public class DockerContext implements ContainerContext {
 				if(exitCode != 0) {
 					DEFAULT_EXIT_LISTENER.onExit(process, exitCode);
 				} else {
-					runCommand("docker stop " + String.join(" ", copyToString(process.getInputStream()).split("\n")));
+					stopContainer(process);
 				}
 			});
 		} catch(Exception e) {
 			LOG.error("Failed to stop all containers", e);
+		}
+	}
+
+	private static void stopContainer(Process process) {
+		try {
+			runCommand("docker stop " + String.join(" ", copyToString(process.getInputStream()).split("\n")));
+		} catch (Exception e) {
+			throw new ProcessException("Failed to run command", e);
 		}
 	}
 
@@ -213,7 +237,21 @@ public class DockerContext implements ContainerContext {
 	}
 
 	@Override
-	public JSONObject export(String container) throws Exception {
+	public JSONObject export(String container) throws ContainerException {
+		ByteArrayOutputStream out;
+		try {
+			out = exportInternal(container);
+		} catch (IOException | InterruptedException e) {
+			throw new ContainerException("Failed to export", e);
+		}
+		String export = Base64.getEncoder().encodeToString(out.toByteArray());
+		return new JSONObject()
+				.put("action", "container")
+				.put("docker", new JSONObject()
+						.put(IMPORT_COMMAND, export));
+	}
+
+	private ByteArrayOutputStream exportInternal(String container) throws IOException, InterruptedException {
 		run("docker stop " + container);
 		Process process = run("docker export " + container);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -224,11 +262,7 @@ public class DockerContext implements ContainerContext {
 				out.write(buffer, 0, read);
 			}
 		}
-		String export = Base64.getEncoder().encodeToString(out.toByteArray());
-		return new JSONObject()
-				.put("action", "container")
-				.put("docker", new JSONObject()
-						.put("import", export));
+		return out;
 	}
 
 	@Override

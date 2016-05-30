@@ -9,7 +9,7 @@ import hro.inflab.dockyou.node.Node;
  */
 public class Shutdown implements Action {
 	@Override
-	public void handle(JSONObject request, Node node) throws Exception {
+	public void handle(JSONObject request, Node node) {
 		node.setShutdown(true);
 	}
 

@@ -8,10 +8,13 @@ import org.apache.logging.log4j.Logger;
 
 import hro.inflab.dockyou.node.container.ContainerContext;
 import hro.inflab.dockyou.node.container.docker.DockerContext;
+import hro.inflab.dockyou.node.exception.InitialisationException;
 
 public class Main {
 	private static final Logger LOG = LogManager.getLogger();
 	private static final Class<? extends ContainerContext> DEFAULT_CONTAINER_CONTEXT = DockerContext.class;
+
+	private Main() {}
 
 	/**
 	 * Program entry point.
@@ -21,15 +24,16 @@ public class Main {
 	 */
 	public static void main(String[] args) {
 		if(args.length == 0) {
-			exit("usage: <manager url>");
+			LOG.error("usage: <manager url>");
+			System.exit(1);
 		}
 		try {
 			URL managerUrl = createUrlOrDie(args[0]);
-			ContainerContext context = createContextOrDie();
-			if(context == null) {
-				exit("Failed to start.");
-			}
+			ContainerContext context = tryCreateContext();
 			new Node(managerUrl, context).run();
+		} catch(InitialisationException e) {
+			LOG.error(e.getMessage(), e);
+			System.exit(1);
 		} catch (Exception e) {
 			LOG.error(e.getMessage(), e);
 			System.exit(2);
@@ -37,18 +41,7 @@ public class Main {
 	}
 
 	/**
-	 * Logs a message and calls System.exit.
-	 * 
-	 * @param message The message to log
-	 */
-	private static void exit(String message) {
-		LOG.error(message);
-		System.exit(1);
-	}
-
-	/**
 	 * Creates a URL from the given string.
-	 * Calls System.exit if an exception occurs.
 	 * 
 	 * @param url The string to create a URL from
 	 * @return The created URL
@@ -57,28 +50,25 @@ public class Main {
 		try {
 			return new URL(url);
 		} catch (MalformedURLException e) {
-			exit("Invalid manager url: " + url);
+			throw new InitialisationException("Invalid manager url: " + url, e);
 		}
-		return null;
 	}
 
 	/**
 	 * Creates a {@link ContainerContext}.
-	 * Calls System.exit if an exception occurs.
 	 * 
 	 * @return The created context
 	 */
-	private static ContainerContext createContextOrDie() {
+	private static ContainerContext tryCreateContext() {
 		try {
 			return createContext();
 		} catch (ClassNotFoundException e) {
-			exit("Failed to load the provided class.");
+			throw new InitialisationException("Failed to load the provided class.", e);
 		} catch (InstantiationException | IllegalAccessException | ClassCastException e) {
-			exit("Failed to instantiate the provided class.");
+			throw new InitialisationException("Failed to instantiate the provided class.", e);
 		} catch (IllegalArgumentException e) {
-			exit(e.getMessage());
+			throw new InitialisationException(e.getMessage(), e);
 		}
-		return null;
 	}
 
 	/**

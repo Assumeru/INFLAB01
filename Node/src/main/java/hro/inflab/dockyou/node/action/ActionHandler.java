@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.reflections.Reflections;
 
 import hro.inflab.dockyou.node.Node;
+import hro.inflab.dockyou.node.exception.ActionException;
 import hro.inflab.dockyou.node.exception.ExceptionsException;
 
 public class ActionHandler {
@@ -49,18 +50,18 @@ public class ActionHandler {
 	 * 
 	 * @param request The request to handle
 	 * @param node The node to handle the request on
-	 * @throws Exception
+	 * @throws ActionException
 	 */
-	public void handle(JSONObject request, Node node) throws Exception {
+	private void handle(JSONObject request, Node node) throws ActionException {
 		Action action;
 		try {
 			String actionName = request.getString("action");
 			action = actions.get(actionName);
 			if(action == null) {
-				throw new RuntimeException("Unknown action " + actionName);
+				throw new ActionException("Unknown action " + actionName);
 			}
 		} catch(JSONException e) {
-			throw new RuntimeException("Invalid action", e);
+			throw new ActionException("Invalid action", e);
 		}
 		action.handle(request, node);
 	}
