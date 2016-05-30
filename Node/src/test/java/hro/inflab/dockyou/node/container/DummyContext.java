@@ -7,7 +7,7 @@ public class DummyContext implements ContainerContext {
 	private JSONArray containers = new JSONArray();
 
 	@Override
-	public void handle(JSONObject request) throws Exception {
+	public void handle(JSONObject request) {
 		if(request.has("add")) {
 			containers.put(request.get("add"));
 		} else if(request.has("remove")) {
@@ -22,7 +22,7 @@ public class DummyContext implements ContainerContext {
 	}
 
 	@Override
-	public JSONObject export(String container) throws Exception {
+	public JSONObject export(String container) {
 		return null;
 	}
 
