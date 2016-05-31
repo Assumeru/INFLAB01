@@ -3,6 +3,7 @@ package hro.inflab.dockyou.node.container.docker;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,9 +15,9 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import hro.inflab.dockyou.node.ProcessListener;
-import hro.inflab.dockyou.node.ProcessListener.ExitListener;
 import hro.inflab.dockyou.node.container.ContainerContext;
+import hro.inflab.dockyou.node.container.ProcessListener;
+import hro.inflab.dockyou.node.container.ProcessListener.ExitListener;
 import hro.inflab.dockyou.node.exception.ContainerException;
 import hro.inflab.dockyou.node.exception.ProcessException;
 
@@ -24,13 +25,10 @@ public class DockerContext implements ContainerContext {
 	private static final Logger LOG = LogManager.getLogger();
 	private static final String IMPORT_COMMAND = "import";
 	private static final Map<String, Function<JSONObject, String>> COMMANDS = new HashMap<>();
-	private static final ExitListener DEFAULT_EXIT_LISTENER = new ExitListener() {
-		@Override
-		public void onExit(Process process, int exitCode) {
-			LOG.info("Process terminated with exit code " + exitCode);
-			LOG.info(copyToString(process.getInputStream()));
-			LOG.info(copyToString(process.getErrorStream()));
-		}
+	private static final ExitListener DEFAULT_EXIT_LISTENER = (process, exitCode) -> {
+		LOG.info("Process terminated with exit code " + exitCode);
+		LOG.info(copyToString(process.getInputStream()));
+		LOG.info(copyToString(process.getErrorStream()));
 	};
 	static {
 		COMMANDS.put("pull", request -> "docker pull " + request.get("pull"));
@@ -80,12 +78,8 @@ public class DockerContext implements ContainerContext {
 	 */
 	private static String copyToString(InputStream in) {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		byte[] buffer = new byte[1024];
-		int read;
 		try {
-			while((read = in.read(buffer)) > 0) {
-				out.write(buffer, 0, read);
-			}
+			copy(in, out, 1024);
 		} catch(IOException e) {
 			LOG.error("Failed to read from stream", e);
 		}
@@ -256,13 +250,17 @@ public class DockerContext implements ContainerContext {
 		Process process = run("docker export " + container);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try(InputStream in = process.getInputStream()) {
-			byte[] buffer = new byte[4096];
-			int read;
-			while((read = in.read(buffer)) > 0) {
-				out.write(buffer, 0, read);
-			}
+			copy(in, out, 4096);
 		}
 		return out;
+	}
+
+	private static void copy(InputStream in, OutputStream out, int bufferSize) throws IOException {
+		byte[] buffer = new byte[bufferSize];
+		int read;
+		while((read = in.read(buffer)) > 0) {
+			out.write(buffer, 0, read);
+		}
 	}
 
 	@Override

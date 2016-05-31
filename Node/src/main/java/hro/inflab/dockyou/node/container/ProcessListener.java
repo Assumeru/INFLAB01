@@ -1,4 +1,4 @@
-package hro.inflab.dockyou.node;
+package hro.inflab.dockyou.node.container;
 
 import java.io.IOException;
 
@@ -21,6 +21,9 @@ public class ProcessListener {
 		this(Runtime.getRuntime().exec(command), listener);
 	}
 
+	/**
+	 * Starts a thread that waits until the process stops.
+	 */
 	public void listen() {
 		Thread thread = new Thread(new Listener(), "ProcessListener");
 		thread.setDaemon(true);

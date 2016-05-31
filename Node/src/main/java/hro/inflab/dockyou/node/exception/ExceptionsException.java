@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class ExceptionsException extends RuntimeException implements Collection<Exception> {
 	private static final long serialVersionUID = 8088593023831411631L;
-	private List<Exception> exceptions = new ArrayList<>();
+	private final List<Exception> exceptions = new ArrayList<>();
 
 	@Override
 	public int size() {
@@ -82,10 +82,6 @@ public class ExceptionsException extends RuntimeException implements Collection<
 	@Override
 	public String getMessage() {
 		StringWriter writer = new StringWriter();
-		String message = super.getMessage();
-		if(message == null) {
-			message = "";
-		}
 		for(Exception e : exceptions) {
 			writer.append("\n\t").append(e.toString());
 			e.printStackTrace(new PrintWriter(writer));
