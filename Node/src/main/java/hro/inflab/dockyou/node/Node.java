@@ -82,6 +82,11 @@ public class Node implements Runnable {
 
 	public void shutdown() {
 		heartBeat.stop();
+		closeQueue();
+		context.stopAll();
+	}
+
+	private void closeQueue() {
 		try {
 			queueConn.close();
 		} catch(AlreadyClosedException e) {
@@ -89,10 +94,12 @@ public class Node implements Runnable {
 		} catch(IOException e) {
 			LOG.error("Error closing connection", e);
 		}
-		context.stopAll();
 	}
 
 	public void setQueue(Connection queueConn) {
+		if(this.queueConn != null) {
+			closeQueue();
+		}
 		this.queueConn = queueConn;
 	}
 
