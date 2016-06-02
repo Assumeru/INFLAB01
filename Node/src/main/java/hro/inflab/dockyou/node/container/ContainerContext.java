@@ -33,5 +33,13 @@ public interface ContainerContext {
 	 */
 	JSONObject export(String container) throws ContainerException;
 
+	/**
+	 * @return A list of running containers.
+	 */
 	JSONArray getContainers();
+
+	/**
+	 * @return A list of starting containers.
+	 */
+	JSONArray getStartingContainers();
 }

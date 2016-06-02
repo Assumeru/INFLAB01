@@ -64,7 +64,8 @@ public class HeartBeatListener implements Runnable {
 	private void sendHeartBeat(Socket socket) throws IOException {
 		JSONObject output = new JSONObject()
 				.put("id", node.getSettings().get("id"))
-				.put("containers", node.getContext().getContainers());
+				.put("containers", node.getContext().getContainers())
+				.put("starting", node.getContext().getStartingContainers());
 		sendHttp(socket, output.toString());
 	}
 

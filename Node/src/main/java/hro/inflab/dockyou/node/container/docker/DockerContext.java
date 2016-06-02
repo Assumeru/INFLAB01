@@ -4,8 +4,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -35,6 +38,7 @@ public class DockerContext implements ContainerContext {
 		COMMANDS.put("run", request -> parseRun(request.getJSONObject("run")));
 		COMMANDS.put("stop", request -> parseStop(request.getJSONObject("stop")));
 	}
+	private List<String> startingContainers = Collections.synchronizedList(new ArrayList<>());
 
 	@Override
 	public void handle(JSONObject request) throws ContainerException {
@@ -285,5 +289,12 @@ public class DockerContext implements ContainerContext {
 			LOG.error("Failed to get containers", e);
 		}
 		return containers;
+	}
+
+	@Override
+	public JSONArray getStartingContainers() {
+		synchronized(startingContainers) {
+			return new JSONArray(startingContainers);
+		}
 	}
 }

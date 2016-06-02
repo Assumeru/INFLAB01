@@ -30,4 +30,9 @@ public class DummyContext implements ContainerContext {
 	public JSONArray getContainers() {
 		return containers;
 	}
+
+	@Override
+	public JSONArray getStartingContainers() {
+		return new JSONArray();
+	}
 }
