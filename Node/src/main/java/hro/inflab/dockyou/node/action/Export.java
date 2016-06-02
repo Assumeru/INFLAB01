@@ -28,7 +28,7 @@ public class Export implements Action {
 		try {
 			Channel channel = conn.createChannel();
 			JSONObject importAction = node.getContext().export(request.getString("container"));
-			channel.basicPublish("", "", null, importAction.toString().getBytes());
+			channel.basicPublish("", config.getString("queue"), null, importAction.toString().getBytes());
 		} finally {
 			conn.close();
 		}

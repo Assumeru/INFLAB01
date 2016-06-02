@@ -250,12 +250,15 @@ public class DockerContext implements ContainerContext {
 	}
 
 	private ByteArrayOutputStream exportInternal(String container) throws IOException, InterruptedException {
+		LOG.info("Stopping container " + container);
 		run("docker stop " + container);
+		LOG.info("Exporting container " + container);
 		Process process = run("docker export " + container);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		try(InputStream in = process.getInputStream()) {
 			copy(in, out, 4096);
 		}
+		LOG.info("Exported image size: " + out.size());
 		return out;
 	}
 

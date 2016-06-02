@@ -44,6 +44,7 @@ public class Node implements Runnable {
 		try {
 			initManager();
 			initHeartBeat();
+			LOG.info("Started");
 		} catch (Exception e) {
 			throw new InitialisationException("Failed to initialise", e);
 		}
