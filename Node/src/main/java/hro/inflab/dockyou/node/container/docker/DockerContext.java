@@ -37,6 +37,9 @@ public class DockerContext implements ContainerContext {
 		COMMANDS.put("pull", request -> "docker pull " + request.get("pull"));
 		COMMANDS.put("run", request -> parseRun(request.getJSONObject("run")));
 		COMMANDS.put("stop", request -> parseStop(request.getJSONObject("stop")));
+		COMMANDS.put("restart", request -> parseRestart(request.getJSONObject("restart")));
+		COMMANDS.put("start", request -> "docker start " + request.get("start"));
+		COMMANDS.put("remove", request -> parseRemove(request.getJSONObject("remove")));
 	}
 	private List<String> startingContainers = Collections.synchronizedList(new ArrayList<>());
 
@@ -161,6 +164,24 @@ public class DockerContext implements ContainerContext {
 		StringBuilder cmd = new StringBuilder("docker stop");
 		if(args.has("time")) {
 			cmd.append(" -t ").append(args.get("time"));
+		}
+		cmd.append(' ').append(args.getString("container"));
+		return cmd.toString();
+	}
+
+	private static String parseRestart(JSONObject args) {
+		StringBuilder cmd = new StringBuilder("docker restart");
+		if(args.has("time")) {
+			cmd.append(" -t ").append(args.get("time"));
+		}
+		cmd.append(' ').append(args.getString("container"));
+		return cmd.toString();
+	}
+
+	private static String parseRemove(JSONObject args) {
+		StringBuilder cmd = new StringBuilder("docker rm");
+		if(args.has("force") && args.getBoolean("force")) {
+			cmd.append(" -f");
 		}
 		cmd.append(' ').append(args.getString("container"));
 		return cmd.toString();
