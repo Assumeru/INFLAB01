@@ -199,6 +199,9 @@ public class DockerContext implements ContainerContext {
 	 * 			"environment": {
 	 * 				[key]: [value]
 	 * 			},
+	 * 			"ports": {
+	 * 				[node]: [container]
+	 * 			},
 	 * 			"image": [image],
 	 * 			"detached": [true|false]
 	 * 		}
@@ -220,6 +223,12 @@ public class DockerContext implements ContainerContext {
 			JSONObject envVars = args.getJSONObject("environment");
 			for(String key : envVars.keySet()) {
 				cmd.append(" -e \"").append(key).append('=').append(envVars.get(key)).append('"');
+			}
+		}
+		if(args.has("ports")) {
+			JSONObject ports = args.getJSONObject("ports");
+			for(String node : ports.keySet()) {
+				cmd.append(" -p ").append(node).append(':').append(ports.get(node));
 			}
 		}
 		cmd.append(' ').append(args.get("image"));
