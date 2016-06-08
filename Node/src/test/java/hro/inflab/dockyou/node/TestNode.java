@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import hro.inflab.dockyou.node.container.DummyContext;
+import hro.inflab.dockyou.node.exception.ExceptionsException;
 
 public class TestNode {
 	private Node node;
@@ -16,29 +17,21 @@ public class TestNode {
 		node = new Node(null, new DummyContext());
 	}
 
-	@Test
+	@Test(expected = ExceptionsException.class)
 	public void testSettings() {
 		Assert.assertTrue(node.getSettings().isEmpty());
 		node.handleActions(getSetId(456));
 		Assert.assertEquals(456, node.getSettings().get("id"));
-		try {
-			node.handleActions(getSetId("NaN"));
-			Assert.fail();
-		} catch(Exception e) {
-		}
+		node.handleActions(getSetId("NaN"));
 	}
 
-	private JSONArray getSetId(Object id) {
+	static JSONArray getSetId(Object id) {
 		return new JSONArray().put(new JSONObject().put("action", "set-id").put("id", id));
 	}
 
-	@Test
+	@Test(expected = ExceptionsException.class)
 	public void testNoActions() {
-		try {
-			node.handleActions(new JSONArray().put(new JSONObject()));
-			Assert.fail();
-		} catch(Exception e) {
-		}
+		node.handleActions(new JSONArray().put(new JSONObject()));
 	}
 
 	@Test

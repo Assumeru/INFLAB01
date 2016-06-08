@@ -79,6 +79,10 @@ public class HeartBeatListener implements Runnable {
 		socket.getOutputStream().flush();
 	}
 
+	public boolean isRunning() {
+		return running;
+	}
+
 	private void tryClose() {
 		running = false;
 		try {
