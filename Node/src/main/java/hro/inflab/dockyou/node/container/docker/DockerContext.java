@@ -304,7 +304,7 @@ public class DockerContext implements ContainerContext {
 	public JSONArray getContainers() {
 		JSONArray containers = new JSONArray();
 		try {
-			Process process = run("docker ps");
+			Process process = run("docker ps -a");
 			String[] lines = copyToString(process.getInputStream()).split("\n");
 			String[] headers = lines[0].split("\\s{2,}");
 			for(int i = 0; i < headers.length; i++) {
