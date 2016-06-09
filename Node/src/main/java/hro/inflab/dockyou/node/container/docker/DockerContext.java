@@ -101,10 +101,6 @@ public class DockerContext implements ContainerContext {
 	 * @throws ContainerException 
 	 */
 	private String parseCommand(JSONObject request) throws ContainerException {
-		//TODO delete
-		if(request.has("test")) {
-			return request.getString("test");
-		}
 		for(Entry<String, Function<JSONObject, String>> entry : COMMANDS.entrySet()) {
 			if(request.has(entry.getKey())) {
 				return entry.getValue().apply(request);
