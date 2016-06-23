@@ -1,5 +1,6 @@
 package hro.inflab.dockyou.node.container.docker;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,7 +12,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
 import java.util.function.Function;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -128,12 +133,13 @@ public class DockerContext implements ContainerContext {
 	 * @throws ContainerException 
 	 */
 	private static void parseImport(String container) throws ContainerException {
-		byte[] input = Base64.getDecoder().decode(container);
+		ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(Base64.getDecoder().decode(container)));
 		try {
+			zip.getNextEntry();
 			Process process = Runtime.getRuntime().exec("docker import -");
-			process.getOutputStream().write(input);
+			copy(zip, process.getOutputStream(), 4096);
 			process.getOutputStream().flush();
-			new ProcessListener(process, DEFAULT_EXIT_LISTENER).listen();;
+			new ProcessListener(process, DEFAULT_EXIT_LISTENER).listen();
 		} catch(IOException e) {
 			throw new ContainerException("Failed to import", e);
 		}
@@ -254,8 +260,20 @@ public class DockerContext implements ContainerContext {
 		}
 	}
 
-	private Process run(String cmd) throws IOException, InterruptedException {
-		Process process = Runtime.getRuntime().exec(cmd);
+	private String[] tokenize(String cmd) {
+        StringTokenizer tokenizer = new StringTokenizer(cmd);
+        String[] out = new String[tokenizer.countTokens()];
+        for(int i = 0; i < out.length; i++) {
+            out[i] = tokenizer.nextToken();
+        }
+        return out;
+	}
+
+	private Process run(String cmd, OutputStream out) throws IOException, InterruptedException {
+		Process process = new ProcessBuilder(tokenize(cmd)).redirectErrorStream(true).start();
+		try(InputStream in = process.getInputStream()) {
+			copy(in, out, 4094);
+		}
 		process.waitFor();
 		return process;
 	}
@@ -277,13 +295,14 @@ public class DockerContext implements ContainerContext {
 
 	private ByteArrayOutputStream exportInternal(String container) throws IOException, InterruptedException {
 		LOG.info("Stopping container " + container);
-		run("docker stop " + container);
+		run("docker stop " + container, new ByteArrayOutputStream());
 		LOG.info("Exporting container " + container);
-		Process process = run("docker export " + container);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		try(InputStream in = process.getInputStream()) {
-			copy(in, out, 4096);
-		}
+		ZipOutputStream zip = new ZipOutputStream(out);
+		zip.setLevel(9);
+		zip.putNextEntry(new ZipEntry("export"));
+		run("docker export " + container, zip);
+		zip.closeEntry();
 		LOG.info("Exported image size: " + out.size());
 		return out;
 	}
@@ -300,8 +319,9 @@ public class DockerContext implements ContainerContext {
 	public JSONArray getContainers() {
 		JSONArray containers = new JSONArray();
 		try {
-			Process process = run("docker ps -a");
-			String[] lines = copyToString(process.getInputStream()).split("\n");
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			run("docker ps -a", out);
+			String[] lines = out.toString().split("\n");
 			String[] headers = lines[0].split("\\s{2,}");
 			for(int i = 0; i < headers.length; i++) {
 				headers[i] = headers[i].trim();
